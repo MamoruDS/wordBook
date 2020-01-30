@@ -2,7 +2,6 @@ const cardCtl = {}
 
 cardCtl._cardpack = {}
 
-
 // cardCtl.setBtnView = (discardBtn = false, archiveBtn = false) => {
 // }
 
@@ -60,4 +59,32 @@ cardCtl._cardScroll = (isNext = true) => {
     }
     if (_res.filledPos['card_discard']) cardCtl.updateDiscardPosCSS()
     return _res
+}
+
+cardCtl.getWordRender = async wordRenderName => {
+    return {
+        cardName: 'preset_card_01',
+        alias: [
+            {
+                cf: 'a00',
+                wf: 'word',
+            },
+            {
+                cf: 'a01',
+                wf: 'yomikata',
+            },
+            {
+                cf: 'a10',
+                wf: 'wordtype',
+            },
+            {
+                cf: 'a20',
+                wf: 'seitsumei',
+            },
+            {
+                cf: 'a30',
+                wf: 'sentence',
+            },
+        ],
+    }
 }
