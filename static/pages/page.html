@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<head>
+    <title>wordBook</title>
+    <meta charset="utf-8" />
+    <meta
+        name="viewport"
+        content="width=device-width, minimum-scale=1, maximum-scale=1 ,initial-scale=1, shrink-to-fit=no, user-scalable=no"
+    />
+    <script src="static/js/test_nisev.js"></script>
+    <link rel="stylesheet" type="text/css" href="static/css/dark_theme.css" />
+    <link rel="stylesheet" type="text/css" href="static/css/wordbook.css" />
+    <link rel="stylesheet" type="text/css" href="static/css/card_ctl.css" />
+    <link rel="stylesheet" type="text/css" href="static/css/dark_books.css" />
+    <link
+        href="https://fonts.googleapis.com/css?family=Noto+Sans+HK|Noto+Sans+JP|Noto+Sans+SC|Noto+Sans+TC|Roboto&display=swap"
+        rel="stylesheet"
+    />
+    <link rel="icon"" href="static/assets/wordbook-128x.png">
+    <link rel="manifest" href="static/manifest.json" />
+    <script src="static/js/pageUtils.js"></script>
+    <script src="static/js/cardCtl.js"></script>
+    <script src="static/js/base64.min.js"></script>
+    <script
+        src="https://kit.fontawesome.com/0c3739f59c.js"
+        crossorigin="anonymous"
+    ></script>
+    <link rel="apple-touch-icon"" href="static/assets/wordbook-128x.png">
+    <meta name="apple-mobile-web-app-title" content="WordBook" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+</head>
+<body>
+    <div id="ctr">
+        <nav>
+            <div class="nav_bar_ctr">
+                <div id="card_caller">
+                    <span>
+                        Cards
+                    </span>
+                </div>
+                <div class="nav_btn_edit">Edit</div>
+                <div class="tab_ctr">
+                    <div class="tab tab_cur">
+                        <!-- Books -->
+                        <i class="fas fa-book"></i>
+                    </div>
+                    <div class="tab">
+                        <!-- List -->
+                        <i class="fas fa-th-list"></i>
+                    </div>
+                    <div class="tab">
+                        <!-- Settings -->
+                        <i class="fas fa-sliders-h"></i>
+                    </div>
+                </div>
+                <div class="nav_btn_search">
+                    <i class="fas fa-search"></i>
+                </div>
+            </div>
+        </nav>
+        <div class="page_content">
+            <div class="page_content_ctr">
+                <div class="book_ctr"></div>
+            </div>
+        </div>
+        <div id="card_desk" class="pasDisplay"></div>
+        <div id="card_bg" class="pasDisplay"></div>
+        <div id="card_ctl_btn_ctr" class="pasDisplay">
+            <div id="card_ctl_btn_hide" class="card_ctl_btn">
+                <i class="fas fa-ban"></i>
+            </div>
+            <div
+                id="card_ctl_btn_archive"
+                class="card_ctl_btn card_ctl_btn_disabled"
+            >
+                <i class="fas fa-archive"></i>
+            </div>
+            <div
+                class="card_ctl_btn card_ctl_btn_disabled"
+                id="card_ctl_btn_withdraw"
+            >
+                <i class="fas fa-arrow-circle-left"></i>
+            </div>
+            <div id="card_ctl_btn_flip" class="card_ctl_btn">
+                <i class="fas fa-undo"></i>
+            </div>
+            <div
+                id="card_ctl_btn_lvdd"
+                class="card_ctl_btn card_ctl_btn_disabled"
+            >
+                <i class="fas fa-angle-left"></i>
+            </div>
+            <div
+                id="card_ctl_btn_lvd"
+                class="card_ctl_btn card_ctl_btn_disabled"
+            >
+                <i class="fas fa-angle-down"></i>
+            </div>
+            <div
+                id="card_ctl_btn_lvr"
+                class="card_ctl_btn card_ctl_btn_disabled"
+            >
+                <i class="fas fa-angle-right"></i>
+            </div>
+            <div id="card_ctl_btn_lvi" class="card_ctl_btn">
+                <i class="fas fa-angle-double-right"></i>
+            </div>
+        </div>
+        <div id="console_ctr">
+            <div id="console"></div>
+            <div id="console_btn"></div>
+        </div>
+    </div>
+</body>

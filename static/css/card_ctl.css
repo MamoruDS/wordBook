@@ -1,0 +1,353 @@
+#card_desk {
+    position: fixed;
+    z-index: 1000;
+    width: 100%;
+    height: 100%;
+    left: 0px;
+    margin-top: 2rem;
+    border-radius: 1rem 1rem 0 0;
+    transition: all 300ms;
+}
+
+#card_desk.pasDisplay {
+    position: fixed;
+    left: -100%;
+}
+
+@media only screen and (min-width: 500px) {
+    #card_desk {
+        width: 500px;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+
+    .card_discard {
+        left: -20% !important;
+    }
+    .card_rm {
+        left: -20% !important;
+    }
+}
+
+@media only screen and (min-width: 750px) {
+    .card_discard {
+        left: -50% !important;
+    }
+    .card_rm {
+        left: -50% !important;
+    }
+}
+
+.card {
+    position: absolute;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    z-index: 1002;
+    width: 96%;
+    height: fit-content;
+    top: -0.25rem;
+    left: 2%;
+    font-size: 2rem;
+    transform: scale(0.88);
+    transition: all 250ms;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.card_face {
+    transition: all 350ms;
+    transform-style: preserve-3d;
+    -webkit-transform-style: preserve-3d;
+    pointer-events: none;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+}
+
+.card_front {
+    position: relative;
+    width: 100%;
+    top: auto;
+    bottom: 0;
+    left: 0;
+    transform: rotateX(180deg);
+}
+
+.card_back {
+    position: absolute;
+    width: 100%;
+    top: 0;
+    bottom: auto;
+    left: 0;
+    height: 100%;
+}
+
+/* .card:hover > .card_front {
+    transform: rotateX(0deg);
+} */
+
+/* .card:hover > .card_back {
+    transform: rotateX(180deg);
+} */
+
+.card_flip > .card_front {
+    top: 0;
+    bottom: auto;
+    transform: rotateX(0deg);
+}
+
+.card_flip > .card_back {
+    top: auto;
+    bottom: 0;
+    transform: rotateX(180deg);
+}
+
+.card_discard {
+    position: absolute;
+    z-index: 1005;
+    transform: scale(0.8);
+    /* top: 85%; */
+    opacity: 1;
+}
+
+.card_rm {
+    position: absolute;
+    z-index: 1005;
+    top: 120%;
+    transform: scale(0.8);
+    opacity: 0.5;
+}
+
+.card_q00 {
+    position: absolute;
+    z-index: 1010;
+    top: 2rem;
+    transform: scale(1);
+    opacity: 1;
+}
+
+.card_q0 {
+    position: absolute;
+    z-index: 1005;
+    top: 1.4rem;
+    transform: scale(1);
+    opacity: 1;
+}
+
+.card_q1 {
+    position: absolute;
+    z-index: 1004;
+    top: 0.8rem;
+    transform: scale(0.96);
+    opacity: 1;
+}
+
+.card_q2 {
+    position: absolute;
+    z-index: 1003;
+    top: 0.3rem;
+    transform: scale(0.92);
+    opacity: 1;
+}
+
+.card_q3 {
+    position: absolute;
+    z-index: 1002;
+    top: -0.3rem;
+    transform: scale(0.88);
+    opacity: 0;
+}
+
+#card_bg {
+    position: fixed;
+    z-index: 900;
+    width: 100%;
+    height: 150%;
+    top: 0;
+    left: 0;
+    background-color: hsla(0, 0%, 0%, 0.75);
+    transition: all 300ms;
+    pointer-events: auto;
+}
+
+#card_bg.pasDisplay {
+    display: initial !important;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.card_content_ctr {
+    position: relative;
+    margin-top: 0;
+    margin-left: 1.5rem;
+    margin-right: 1.2rem;
+    padding-top: 0.5rem;
+    padding-bottom: 1.5rem;
+    cursor: pointer;
+    pointer-events: none;
+}
+
+#card_ctl_btn_ctr {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    position: fixed;
+    z-index: 2000;
+    width: 92%;
+    height: 10rem;
+    bottom: 4rem;
+    right: 4%;
+    transition: all 300ms;
+}
+
+#card_ctl_btn_ctr.pasDisplay {
+    position: fixed;
+    right: -100%;
+}
+
+.card_ctl_btn {
+    width: 4.5rem;
+    height: 4.5rem;
+    margin-bottom: 1rem;
+    font-size: 2.8rem;
+    color: var(--fg-hi);
+    background-color: var(--card-bg);
+    border-radius: 1.5rem 1.5rem 1.5rem 1.5rem;
+    border-top: 0.15rem solid var(--card-border-fg);
+    box-shadow: 0rem 0.2rem 0.05rem 0rem hsla(0, 0%, 0%, 0.2);
+    cursor: pointer;
+    text-align: center;
+    line-height: 4.5rem;
+    transition: all 100ms;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+@media only screen and (max-width: 335px) {
+    .card_ctl_btn {
+        width: 4rem;
+        height: 4rem;
+        line-height: 4rem;
+        font-size: 2.5rem;
+    }
+}
+
+@media only screen and (min-width: 385px) {
+    .card_ctl_btn {
+        width: 5rem;
+        height: 5rem;
+        line-height: 5rem;
+    }
+}
+
+@media only screen and (min-width: 430px) {
+    .card_ctl_btn {
+        width: 5.5rem;
+        height: 5.5rem;
+        margin-left: 0.2rem;
+        margin-right: 0.2rem;
+        line-height: 5.5rem;
+    }
+}
+
+@media only screen and (min-width: 500px) {
+    #card_ctl_btn_ctr {
+        width: 460px;
+    }
+    .card_ctl_btn {
+        font-size: 3rem;
+    }
+}
+
+.card_ctl_btn > svg > path {
+    user-select: none;
+    -webkit-user-select: none;
+    pointer-events: none;
+}
+.card_ctl_btn > svg {
+    user-select: none;
+    -webkit-user-select: none;
+    pointer-events: none;
+}
+
+.card_ctl_btn:hover:not(.card_ctl_btn_disabled) {
+    font-size: 2.5rem;
+}
+
+.card_lb {
+    border-color: var(--fg-trans);
+    margin-top: 0.4rem;
+    margin-bottom: 0.4rem;
+}
+
+.card_l1 {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+}
+
+#card_ctl_btn_hide {
+    color: var(--theme-cy);
+}
+
+#card_ctl_btn_archive {
+    color: var(--theme-vt);
+}
+
+#card_ctl_btn_withdraw {
+    color: var(--theme-rd);
+}
+
+#card_ctl_btn_flip {
+    font-size: 2.4rem;
+    color: var(--theme-gy-br);
+}
+
+#card_ctl_btn_flip:hover {
+    font-size: 2.1rem;
+}
+
+#card_ctl_btn_lvdd {
+    color: var(--theme-or);
+}
+
+#card_ctl_btn_lvd {
+    color: var(--theme-yl);
+}
+
+#card_ctl_btn_lvr {
+    color: var(--theme-gn);
+}
+
+#card_ctl_btn_lvi {
+    color: var(--theme-bl);
+}
+
+.card_ctl_btn_disabled {
+    cursor: not-allowed;
+    color: var(--transparent-black-30) !important;
+}
+
+.card_face_end {
+    background-color: var(--card-bg-invert);
+    border-radius: 1rem 1rem 1rem 1rem;
+    border-top: 0.15rem solid var(--card-border-fg-invert);
+    box-shadow: 0rem 0.6rem 1rem 0.5rem hsla(0, 0%, 0%, 0.2);
+}
+
+.card_face_default {
+    background-color: var(--card-bg);
+    border-radius: 1rem 1rem 1rem 1rem;
+    border-top: 0.15rem solid var(--card-border-fg);
+    box-shadow: 0rem 0.6rem 1rem 0.5rem hsla(0, 0%, 0%, 0.2);
+}
+/* 
+.card_end_card {
+    color: var(--fg-main-inv);
+    text-align: center;
+    padding-top: 4rem;
+    padding-bottom: 4rem;
+} */
