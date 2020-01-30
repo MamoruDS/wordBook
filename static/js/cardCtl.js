@@ -20,7 +20,7 @@ cardCtl.updateDiscardPosCSS = (fixedHeight = 90) => {
     style.innerHTML = cssText
 }
 
-cardCtl._cardScroll = (isNext = true) => {
+cardCtl._cardScroll = (step = 0) => {
     let cardPos = [
         'card_rm',
         'card_discard',
@@ -29,11 +29,11 @@ cardCtl._cardScroll = (isNext = true) => {
         'card_q2',
         'card_q3']
     let _res = {
-        cardRequest: 0,
+        cardRequest: 3,
         filledPos: {}
     }
     let cardDiscard = document.querySelector('.card_discard')
-    if (!isNext) {
+    if (step < 0) {
         if (!cardDiscard) return _res
         cardPos = cardPos.reverse()
     }
@@ -46,17 +46,18 @@ cardCtl._cardScroll = (isNext = true) => {
                 card.classList.remove(curPosName)
                 card.classList.add(prePosName)
                 _res.filledPos[prePosName] = true
+                if (
+                    prePosName === 'card_q0' ||
+                    prePosName === 'card_q1' ||
+                    prePosName === 'card_q2'
+                ) {
+                    _res.cardRequest--
+                }
             } else {
                 try {
                     pageUtils.removeElement(card)
                 } catch (e) { }
             }
-        } if ((
-            curPosName !== 'card_rm'
-            && curPosName !== 'card_discard'
-            && curPosName !== 'card_q3'
-        )) {
-            _res.cardRequest++
         }
     }
     if (_res.filledPos['card_discard']) cardCtl.updateDiscardPosCSS()
@@ -93,7 +94,7 @@ cardCtl.getCardRender = async rName => {
 
 cardCtl.updateCardView = (enableCardView = true) => {
     let views = {
-        cardView: document.getElementById('card_hover'),
+        cardView: document.getElementById('card_desk'),
         cardBtnView: document.getElementById('card_ctl_btn_ctr'),
         cardViewBG: document.getElementById('card_bg')
     }
@@ -106,9 +107,12 @@ cardCtl.updateCardView = (enableCardView = true) => {
     }
 }
 
-cardCtl.createCardCtrNode = async (wordRender, wordFields) => {
+cardCtl.createCardCtrNode = async (bid, wid, wlv, wordRender, wordFields) => {
     let cardCtr = document.createElement('div')
     cardCtr.classList.add('card')
+    cardCtr.setAttribute('wi_bid', bid)
+    cardCtr.setAttribute('wi_wid', wid)
+    cardCtr.setAttribute('wi_wlv', wlv)
     // TODO: getWordRender async
     let render = getWordRender(wordRender)
     let card = {
@@ -150,3 +154,59 @@ cardCtl.createCardCtrNode = async (wordRender, wordFields) => {
     }
     return cardCtr
 }
+
+cardCtl.updateDesk = async (action) => {
+    let scroll = cardCtl._cardScroll(action['step'])
+    let cardReqCount = scroll.cardRequest
+    let desk = document.getElementById('card_desk')
+    let cardPos = ['card_q0', 'card_q1', 'card_q2']
+    cardPos = cardPos.slice(cardPos.length - cardReqCount)
+    // console.log(cardPos.toString())
+    // console.log(`what the? count:${cardReqCount}`)
+    for (let c = 0; c < cardReqCount; c++) {
+        let card = await cardCtl.curCardList.putTopCard()
+        if (card) {
+            console.log(card)
+            card.classList.add(cardPos[c])
+            desk.appendChild(card)
+        }
+    }
+}
+
+class cardListNew {
+    constructor(bids) {
+        this.wordList = test_nisev.wordList
+    }
+
+    async putTopCard() {
+        let word = this.wordList.shift()
+        if (word) {
+            let card = await cardCtl.createCardCtrNode(
+                word['bookId'], word['wordId'], word['level'],
+                word['wordRender'], word['fields']
+            )
+            return card
+        }
+    }
+
+    async genCardNodes(appendToDesk = true) {
+        let desk = document.getElementById('card_desk')
+        let genCount = 0
+        for (let word of this.wordList) {
+            if (!word['node']) {
+                let card = await cardCtl.createCardCtrNode(
+                    word['wordRender'],
+                    word['fields']
+                )
+                genCount++
+                word['node'] = card
+                if (appendToDesk && desk) {
+                    card_desk.appendChild(card)
+                }
+            }
+        }
+        return genCount
+    }
+}
+
+cardCtl.curCardList = new cardListNew()
