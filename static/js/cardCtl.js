@@ -1,3 +1,5 @@
+let temp_card_render = undefined
+
 const cardCtl = {}
 
 cardCtl._cardpack = {}
@@ -5,7 +7,7 @@ cardCtl._cardpack = {}
 // cardCtl.setBtnView = (discardBtn = false, archiveBtn = false) => {
 // }
 
-cardCtl.updateDiscardPosCSS = (fixHight = 90) => {
+cardCtl.updateDiscardPosCSS = (fixedHeight = 90) => {
     let wh = window.innerHeight
     let style = document.getElementById('style_discard_dynamic')
     if (!style) {
@@ -14,7 +16,7 @@ cardCtl.updateDiscardPosCSS = (fixHight = 90) => {
         style.id = 'style_discard_dynamic'
         document.body.appendChild(style)
     }
-    cssText = `.card_discard { top: ${wh - fixHight}px !important; }`
+    cssText = `.card_discard { top: ${wh - fixedHeight}px !important; }`
     style.innerHTML = cssText
 }
 
@@ -46,7 +48,7 @@ cardCtl._cardScroll = (isNext = true) => {
                 _res.filledPos[prePosName] = true
             } else {
                 try {
-                    removeElement(card)
+                    pageUtils.removeElement(card)
                 } catch (e) { }
             }
         } if ((

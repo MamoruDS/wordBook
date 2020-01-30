@@ -7,3 +7,9 @@ pageUtils.wait = async t => {
         }, t)
     })
 }
+
+pageUtils.removeElement = element => {
+    if (element) try {
+        element.parentNode.removeChild(element)
+    } catch (err) { }
+}
