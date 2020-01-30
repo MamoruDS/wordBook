@@ -65,11 +65,11 @@ cardCtl._cardScroll = (step = 0) => {
 }
 
 cardCtl.getWordRender = async wordRenderName => {
-    return test_nisev.getWordRender
+    return test_nisev.getWordRender[wordRenderName]
 }
 
 cardCtl._getCardRenderRemote = rName => {
-    // if (cardCtl.cardpack[rName]) return
+    // if (cardCtl._cardpack[rName]) return
     return new Promise((resolve, reject) => {
         let script = document.createElement('script')
         script.src = `${test_nisev.requestUrl}/static/custom/${rName}.js`
@@ -80,16 +80,16 @@ cardCtl._getCardRenderRemote = rName => {
 }
 
 cardCtl.getCardRender = async rName => {
-    if (!cardCtl.cardpack[rName]) {
+    if (!cardCtl._cardpack[rName]) {
         await cardCtl._getCardRenderRemote(rName)
-        cardCtl.cardpack[rName] = {}
-        cardCtl.cardpack[rName]['html'] = {
+        cardCtl._cardpack[rName] = {}
+        cardCtl._cardpack[rName]['html'] = {
             front_html: temp_card_render['card_front_html'],
             back_html: temp_card_render['card_back_html'],
         }
-        cardCtl.cardpack[rName]['css'] = temp_card_render['card_css']
+        cardCtl._cardpack[rName]['css'] = temp_card_render['card_css']
     }
-    return cardCtl.cardpack[rName]
+    return cardCtl._cardpack[rName]
 }
 
 cardCtl.updateCardView = (enableCardView = true) => {
@@ -118,8 +118,7 @@ cardCtl.createCardCtrNode = async (
     cardCtr.setAttribute('wi_bid', bid)
     cardCtr.setAttribute('wi_wid', wid)
     cardCtr.setAttribute('wi_wlv', wlv)
-    // TODO: getWordRender async
-    let render = getWordRender(wordRender)
+    let render = await cardCtl.getWordRender(wordRender)
     let card = {
         name: render.cardName,
         html: {
@@ -130,7 +129,7 @@ cardCtl.createCardCtrNode = async (
         // TODO: append randomSeed to style node id
         styleNodeId: `${render.cardName}`,
     }
-    let cardInfo = await getCardRenderSync(card.name)
+    let cardInfo = await cardCtl.getCardRender(card.name)
     card.html.card_front = cardInfo['html']['front_html']
     card.html.card_back = cardInfo['html']['back_html']
     card.css = cardInfo['css']
@@ -175,6 +174,20 @@ cardCtl.updateDesk = async (action) => {
                 card.classList.add(cardPos[c])
             }, 150)
             await pageUtils.wait(200)
+        } else if (cardReqCount === 1) {
+            card = await cardCtl.createCardCtrNode(
+                'preserve', 'preserve', 'preserve',
+                'preset_finish_card', {
+                front_msg: 'have some fun',
+                back_msg: 'you finished all tasks'
+            }, {
+                cardFace: 'card_face_end'
+            }
+            )
+            desk.appendChild(card)
+            setTimeout(() => {
+                card.classList.add(cardPos[c])
+            }, 150)
         }
     }
 }
