@@ -105,3 +105,48 @@ cardCtl.updateCardView = (enableCardView = true) => {
         }
     }
 }
+
+cardCtl.createCardCtrNode = async (wordRender, wordFields) => {
+    let cardCtr = document.createElement('div')
+    cardCtr.classList.add('card')
+    // TODO: getWordRender async
+    let render = getWordRender(wordRender)
+    let card = {
+        name: render.cardName,
+        html: {
+            card_front: undefined,
+            card_back: undefined,
+        },
+        css: undefined,
+        // TODO: append randomSeed to style node id
+        styleNodeId: `${render.cardName}`,
+    }
+    let cardInfo = await getCardRenderSync(card.name)
+    card.html.card_front = cardInfo['html']['front_html']
+    card.html.card_back = cardInfo['html']['back_html']
+    card.css = cardInfo['css']
+    for (let face of Object.keys(card.html)) {
+        let cardFace = document.createElement('div')
+        cardFace.classList.add('card_face')
+        cardFace.classList.add(face)
+        let contentCtr = document.createElement('div')
+        contentCtr.classList.add('card_content_ctr')
+        contentCtr.innerHTML = card.html[face]
+        for (let field of render.alias) {
+            try {
+                let nf = contentCtr.querySelector(`[data=${field.cf}]`)
+                nf.innerHTML = wordFields[field.wf]
+            } catch (e) { }
+        }
+        cardFace.appendChild(contentCtr)
+        cardCtr.appendChild(cardFace)
+    }
+    if (!document.getElementById(card.styleNodeId)) {
+        let cardStyle = document.createElement('style')
+        cardStyle.type = 'text/css'
+        cardStyle.id = card.styleNodeId
+        cardStyle.appendChild(document.createTextNode(card.css))
+        document.body.appendChild(cardStyle)
+    }
+    return cardCtr
+}
