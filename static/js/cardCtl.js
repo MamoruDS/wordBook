@@ -107,7 +107,12 @@ cardCtl.updateCardView = (enableCardView = true) => {
     }
 }
 
-cardCtl.createCardCtrNode = async (bid, wid, wlv, wordRender, wordFields) => {
+cardCtl.createCardCtrNode = async (
+    bid, wid, wlv, wordRender, wordFields,
+    customStyle = {
+        cardFace: 'card_face_default'
+    },
+) => {
     let cardCtr = document.createElement('div')
     cardCtr.classList.add('card')
     cardCtr.setAttribute('wi_bid', bid)
@@ -132,6 +137,7 @@ cardCtl.createCardCtrNode = async (bid, wid, wlv, wordRender, wordFields) => {
     for (let face of Object.keys(card.html)) {
         let cardFace = document.createElement('div')
         cardFace.classList.add('card_face')
+        cardFace.classList.add(customStyle.cardFace)
         cardFace.classList.add(face)
         let contentCtr = document.createElement('div')
         contentCtr.classList.add('card_content_ctr')
