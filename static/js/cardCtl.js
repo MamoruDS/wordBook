@@ -65,8 +65,8 @@ cardCtl.getWordRender = async wordRenderName => {
     return test_nisev.getWordRender
 }
 
-cardCtl.getCardRenderRemote = rName => {
-    if (cardpack[rName]) return
+cardCtl._getCardRenderRemote = rName => {
+    // if (cardCtl.cardpack[rName]) return
     return new Promise((resolve, reject) => {
         let script = document.createElement('script')
         script.src = `${test_nisev.requestUrl}/static/custom/${rName}.js`
@@ -74,4 +74,17 @@ cardCtl.getCardRenderRemote = rName => {
         script.onload = () => resolve()
         script.onerror = e => reject(e)
     })
+}
+
+cardCtl.getCardRender = async rName => {
+    if (!cardCtl.cardpack[rName]) {
+        await cardCtl._getCardRenderRemote(rName)
+        cardCtl.cardpack[rName] = {}
+        cardCtl.cardpack[rName]['html'] = {
+            front_html: temp_card_render['card_front_html'],
+            back_html: temp_card_render['card_back_html'],
+        }
+        cardCtl.cardpack[rName]['css'] = temp_card_render['card_css']
+    }
+    return cardCtl.cardpack[rName]
 }
