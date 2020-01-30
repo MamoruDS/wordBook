@@ -175,19 +175,21 @@ cardCtl.updateDesk = async (action) => {
             }, 150)
             await pageUtils.wait(200)
         } else if (cardReqCount === 1) {
-            card = await cardCtl.createCardCtrNode(
-                'preserve', 'preserve', 'preserve',
-                'preset_finish_card', {
-                front_msg: 'have some fun',
-                back_msg: 'you finished all tasks'
-            }, {
-                cardFace: 'card_face_end'
+            if (document.querySelectorAll('[wi_wid="ENDCARD"]').length === 0) {
+                card = await cardCtl.createCardCtrNode(
+                    'preserve', 'ENDCARD', 'preserve',
+                    'preset_finish_card', {
+                    front_msg: 'have some fun',
+                    back_msg: 'hooray 🎉<br> you finished all your tasks'
+                }, {
+                    cardFace: 'card_face_end'
+                }
+                )
+                desk.appendChild(card)
+                setTimeout(() => {
+                    card.classList.add(cardPos[c])
+                }, 150)
             }
-            )
-            desk.appendChild(card)
-            setTimeout(() => {
-                card.classList.add(cardPos[c])
-            }, 150)
         }
     }
 }
