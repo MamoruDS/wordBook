@@ -161,14 +161,14 @@ cardCtl.updateDesk = async (action) => {
     let desk = document.getElementById('card_desk')
     let cardPos = ['card_q0', 'card_q1', 'card_q2']
     cardPos = cardPos.slice(cardPos.length - cardReqCount)
-    // console.log(cardPos.toString())
-    // console.log(`what the? count:${cardReqCount}`)
     for (let c = 0; c < cardReqCount; c++) {
         let card = await cardCtl.curCardList.putTopCard()
         if (card) {
-            console.log(card)
-            card.classList.add(cardPos[c])
             desk.appendChild(card)
+            setTimeout(() => {
+                card.classList.add(cardPos[c])
+            }, 150)
+            await pageUtils.wait(200)
         }
     }
 }
