@@ -62,29 +62,16 @@ cardCtl._cardScroll = (isNext = true) => {
 }
 
 cardCtl.getWordRender = async wordRenderName => {
-    return {
-        cardName: 'preset_card_01',
-        alias: [
-            {
-                cf: 'a00',
-                wf: 'word',
-            },
-            {
-                cf: 'a01',
-                wf: 'yomikata',
-            },
-            {
-                cf: 'a10',
-                wf: 'wordtype',
-            },
-            {
-                cf: 'a20',
-                wf: 'seitsumei',
-            },
-            {
-                cf: 'a30',
-                wf: 'sentence',
-            },
-        ],
-    }
+    return test_nisev.getWordRender
+}
+
+cardCtl.getCardRenderRemote = rName => {
+    if (cardpack[rName]) return
+    return new Promise((resolve, reject) => {
+        let script = document.createElement('script')
+        script.src = `${test_nisev.requestUrl}/static/custom/${rName}.js`
+        document.head.appendChild(script)
+        script.onload = () => resolve()
+        script.onerror = e => reject(e)
+    })
 }
