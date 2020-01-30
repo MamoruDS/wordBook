@@ -88,3 +88,18 @@ cardCtl.getCardRender = async rName => {
     }
     return cardCtl.cardpack[rName]
 }
+
+cardCtl.updateCardView = (enableCardView = true) => {
+    let views = {
+        cardView: document.getElementById('card_hover'),
+        cardBtnView: document.getElementById('card_ctl_btn_ctr'),
+        cardViewBG: document.getElementById('card_bg')
+    }
+    for (let view of Object.keys(views)) {
+        if (enableCardView) {
+            views[view].classList.remove('pasDisplay')
+        } else {
+            views[view].classList.add('pasDisplay')
+        }
+    }
+}
