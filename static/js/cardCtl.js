@@ -220,25 +220,6 @@ class cardListNew {
             return card
         }
     }
-
-    async genCardNodes(appendToDesk = true) {
-        let desk = document.getElementById('card_desk')
-        let genCount = 0
-        for (let word of this.wordList) {
-            if (!word['node']) {
-                let card = await cardCtl.createCardCtrNode(
-                    word['wordRender'],
-                    word['fields']
-                )
-                genCount++
-                word['node'] = card
-                if (appendToDesk && desk) {
-                    card_desk.appendChild(card)
-                }
-            }
-        }
-        return genCount
-    }
 }
 
 cardCtl.curCardList = new cardListNew()
