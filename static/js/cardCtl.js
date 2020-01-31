@@ -4,6 +4,8 @@ const cardCtl = {}
 
 cardCtl._cardpack = {}
 
+cardCtl._withdrawEnabled = false
+
 // cardCtl.setBtnView = (discardBtn = false, archiveBtn = false) => {
 // }
 
@@ -108,13 +110,14 @@ cardCtl.updateCardView = (enableCardView = true) => {
 }
 
 cardCtl.createCardCtrNode = async (
-    bid, wid, wlv, wordRender, wordFields,
+    rid, bid, wid, wlv, wordRender, wordFields,
     customStyle = {
         cardFace: 'card_face_default'
     },
 ) => {
     let cardCtr = document.createElement('div')
     cardCtr.classList.add('card')
+    cardCtr.setAttribute('wi_rid', rid)
     cardCtr.setAttribute('wi_bid', bid)
     cardCtr.setAttribute('wi_wid', wid)
     cardCtr.setAttribute('wi_wlv', wlv)
@@ -163,6 +166,13 @@ cardCtl.createCardCtrNode = async (
 cardCtl.updateDesk = async (action) => {
     let scroll = cardCtl._cardScroll(action['step'])
     let cardReqCount = scroll.cardRequest
+    if (scroll.filledPos['card_discard']) {
+        document.getElementById('card_ctl_btn_withdraw').classList.remove('card_ctl_btn_disabled')
+        cardCtl._withdrawEnabled = true
+    } else {
+        document.getElementById('card_ctl_btn_withdraw').classList.add('card_ctl_btn_disabled')
+        cardCtl._withdrawEnabled = false
+    }
     let desk = document.getElementById('card_desk')
     let cardPos = ['card_q0', 'card_q1', 'card_q2']
     cardPos = cardPos.slice(cardPos.length - cardReqCount)
@@ -177,7 +187,7 @@ cardCtl.updateDesk = async (action) => {
         } else if (cardReqCount === 1) {
             if (document.querySelectorAll('[wi_wid="ENDCARD"]').length === 0) {
                 card = await cardCtl.createCardCtrNode(
-                    'preserve', 'ENDCARD', 'preserve',
+                    'END', 'preserve', 'ENDCARD', 'preserve',
                     'preset_finish_card', {
                     front_msg: 'have some fun',
                     back_msg: 'hooray 🎉<br> you finished all your tasks'
@@ -197,14 +207,15 @@ cardCtl.updateDesk = async (action) => {
 class cardListNew {
     constructor(bids) {
         this.wordList = test_nisev.wordList
+        this.bookList = test_nisev.bookList
     }
 
     async putTopCard() {
         let word = this.wordList.shift()
         if (word) {
             let card = await cardCtl.createCardCtrNode(
-                word['bookId'], word['wordId'], word['level'],
-                word['wordRender'], word['fields']
+                word['recId'], word['bookId'], word['wordId'],
+                word['level'], word['wordRender'], word['fields']
             )
             return card
         }
