@@ -220,6 +220,60 @@ class cardListNew {
             return card
         }
     }
+
+    async getLeftWords() {
+        let reqObj = pageUtils.getDefaultReqObj()
+        reqObj.url = '/api/words/leftwords'
+        reqObj.params = {
+            bids: JSON.stringify(this.bookList),
+            c: 5,
+            b64d: true
+        }
+        let res = await pageUtils.remoteResRequest(reqObj)
+        // return res
+        return res.data
+    }
+    
+    async updateWordList() {
+        this.wordList = []
+        let fetchWords = await this.getLeftWords()
+        let cardPosList =
+            ['card_discard', 'card_q0', 'card_q1', 'card_q2']
+    
+        let i_f = 0
+        let i_p_fix = 0
+        while (fetchWords[i_f]) {
+            let cardPos = cardPosList[i_f + i_p_fix]
+            if (!cardPos) {
+                this.wordList.push(fetchWords[i_f])
+                i_f++
+                continue
+            }
+            let cardRidAttr = `[wi_rid="${fetchWords[i_f]['recId']}"]`
+            let deskCard = document.querySelector(`.${cardPos}${cardRidAttr}`)
+    
+            if (deskCard) {
+                i_f++
+                continue
+            }
+            await cardCtl.removeCard(
+                document.querySelector(`.${cardPos}`)
+            )
+            if (i_f === 0) {
+                i_p_fix++
+                continue
+            } else {
+                deskCard = document.querySelector(`${cardRidAttr}`)
+                if (deskCard) {
+                    deskCard.classList = `card ${cardPos}`
+                } else {
+                    this.wordList.push(fetchWords[i_f])
+                }
+            }
+            i_f++
+            continue
+        }
+    }
 }
 
 cardCtl.curCardList = new cardListNew()
