@@ -163,6 +163,14 @@ cardCtl.createCardCtrNode = async (
     return cardCtr
 }
 
+cardCtl.removeCard = async (cardEle) => {
+    if (cardEle) {
+        cardEle.classList = 'card'
+        await pageUtils.wait(150)
+        pageUtils.removeElement(cardEle)
+    }
+}
+
 cardCtl.updateDesk = async (action) => {
     let scroll = cardCtl._cardScroll(action['step'])
     let cardReqCount = scroll.cardRequest
