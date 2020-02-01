@@ -42,11 +42,14 @@ cardCtl._cardScroll = (step = 0) => {
     for (let i in cardPos) {
         let curPosName = cardPos[i]
         let prePosName = cardPos[i - 1]
+        if (step === 0) prePosName = curPosName
         let card = document.querySelector(`.${curPosName}`)
         if (card) {
             if (prePosName) {
-                card.classList.remove(curPosName)
-                card.classList.add(prePosName)
+                if (step !== 0) {
+                    card.classList.remove(curPosName)
+                    card.classList.add(prePosName)
+                }
                 _res.filledPos[prePosName] = true
                 if (
                     prePosName === 'card_q0' ||
@@ -172,6 +175,7 @@ cardCtl.removeCard = async (cardEle) => {
 }
 
 cardCtl.updateDesk = async (action) => {
+    await cardCtl.curCardList.updateWordList()
     let scroll = cardCtl._cardScroll(action['step'])
     let cardReqCount = scroll.cardRequest
     if (scroll.filledPos['card_discard']) {
@@ -241,13 +245,13 @@ class cardListNew {
         // return res
         return res.data
     }
-    
+
     async updateWordList() {
         this.wordList = []
         let fetchWords = await this.getLeftWords()
         let cardPosList =
             ['card_discard', 'card_q0', 'card_q1', 'card_q2']
-    
+
         let i_f = 0
         let i_p_fix = 0
         while (fetchWords[i_f]) {
@@ -259,7 +263,7 @@ class cardListNew {
             }
             let cardRidAttr = `[wi_rid="${fetchWords[i_f]['recId']}"]`
             let deskCard = document.querySelector(`.${cardPos}${cardRidAttr}`)
-    
+
             if (deskCard) {
                 i_f++
                 continue
