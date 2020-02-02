@@ -234,14 +234,14 @@ class cardListNew {
     }
 
     async getLeftWords() {
-        let reqObj = pageUtils.getDefaultReqObj()
+        let reqObj = pageUtils.getDefaultReqOptions()
         reqObj.url = '/api/words/leftwords'
         reqObj.params = {
             bids: JSON.stringify(this.bookList),
             c: 5,
             b64d: true
         }
-        let res = await pageUtils.remoteResRequest(reqObj)
+        let res = await pageUtils.req(reqObj)
         // return res
         return res.data
     }
