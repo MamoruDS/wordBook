@@ -17,18 +17,24 @@ class request:
     def __init__(self, flask_request):
         self.req = flask_request
 
-    def param(self, key, optional=True, default=None, jsonStr=False, paramType=str):
+    def param(self,
+              key,
+              optional=True,
+              default=None,
+              jsonStr=False,
+              paramType=str):
         val = self.req.args.get(key)
         if (not optional) and (val is None):
             raise ReqKeyUndefined()
         elif (val is None):
             val = default
-        try:
-            if jsonStr:
-                val = json.loads(val)
-            val = paramType(val)
-        except (ValueError):
-            raise ReqKeyValueError()
+        if paramType is not None:
+            try:
+                if jsonStr:
+                    val = json.loads(val)
+                val = paramType(val)
+            except (ValueError):
+                raise ReqKeyValueError()
         return val
 
     def data(self, key, optional=True, default=None, paramType=str):
@@ -39,20 +45,19 @@ class request:
                 val = default
             else:
                 raise ReqKeyUndefined()
-
-        try:
-            print(paramType(val))
-            if type(paramType(val)) is bool:
-                if val in [1, '1', 'true', 'True', True]:
-                    val = True
-                elif val in [0, '0', 'false', 'False', False]:
-                    val = False
+        if paramType is not None:
+            try:
+                if type(paramType(val)) is bool:
+                    if val in [1, '1', 'true', 'True', True]:
+                        val = True
+                    elif val in [0, '0', 'false', 'False', False]:
+                        val = False
+                    else:
+                        raise ReqKeyValueError()
                 else:
-                    raise ReqKeyValueError()
-            else:
-                val = paramType(val)
-        except (ValueError):
-            raise ReqKeyValueError()
+                    val = paramType(val)
+            except (ValueError):
+                raise ReqKeyValueError()
         return val
 
 
