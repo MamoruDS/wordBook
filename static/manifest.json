@@ -1,0 +1,37 @@
+{
+    "name": "WordBook",
+    "short_name": "WordBook",
+    "start_url": "/books",
+    "display": "standalone",
+    "description": "",
+    "orientation": "any",
+    "background_color": "#2c2c2c",
+    "theme_color": "#2c2c2c",
+    "icons": [
+        {
+            "src": "static/assets/wordbook-32x.png",
+            "sizes": "32x32",
+            "type": "image/png"
+        },
+        {
+            "src": "static/assets/wordbook-64x.png",
+            "sizes": "64x64",
+            "type": "image/png"
+        },
+        {
+            "src": "static/assets/wordbook-128x.png",
+            "sizes": "128x128",
+            "type": "image/png"
+        },
+        {
+            "src": "static/assets/wordbook-256x.png",
+            "sizes": "256x256",
+            "type": "image/png"
+        },
+        {
+            "src": "static/assets/wordbook-512x.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ]
+}
