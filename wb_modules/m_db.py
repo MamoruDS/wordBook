@@ -42,10 +42,6 @@ def tableCheck(tableName, fields, create=True, colNameB64E=True):
         return True
     else:
         if create:
-            queryStr = '''
-                    CREATE TABLE "{}"
-                    ({})
-            '''
             cols = []
             for col in fields.keys():
                 colType = fields[col]['db_type']
@@ -55,10 +51,13 @@ def tableCheck(tableName, fields, create=True, colNameB64E=True):
                 if colType not in SQL_TYPE:
                     colType = 'TEXT'
                 if unique:
-                    cols.append('"{}" {} NOT NULL UNIQUE'.format(col, colType))
+                    cols.append(f'"{col}" {colType} NOT NULL UNIQUE')
                 else:
-                    cols.append('"{}" {}'.format(col, colType))
-            CONN.execute(queryStr.format(tableName, ', '.join(cols)))
+                    cols.append(f'"{col}" {colType}')
+            CONN.execute(f'''
+                    CREATE TABLE "{tableName}"
+                    ({', '.join(cols)})
+            ''')
             return True
         else:
             return False
@@ -86,7 +85,7 @@ def addWord(bookId, wordId, wordObj, colNameB64E=True):
     wordObj['word_id'] = wordId
     for col in wordObj.keys():
         if colNameB64E:
-            cols.append('"{}"'.format(m_utils.b64EncodeStr(col)))
+            cols.append(f'"{m_utils.b64EncodeStr(col)}"')
         values.append(str(wordObj[col]))
     valueReplace = []
     for i in range(len(values)):
@@ -108,12 +107,10 @@ def addWord(bookId, wordId, wordObj, colNameB64E=True):
 
 def getWord(bookId, wordId=None, colNameB64E=True):
     if wordId is not None:
-        wordId = 'WHERE "d29yZF9pZA=="="{}"'.format(wordId)
+        wordId = f'WHERE "d29yZF9pZA=="="{wordId}"'
     else:
         wordId = ''
-    res = CONN.execute('''
-            SELECT * FROM "{}" {}
-    '''.format(bookId, wordId))
+    res = CONN.execute(f'SELECT * FROM "{bookId}" {wordId}')
     if colNameB64E:
         colh = list(map(lambda x: m_utils.b64DecodeStr(x[0]), res.description))
     else:
@@ -127,12 +124,12 @@ def getWord(bookId, wordId=None, colNameB64E=True):
 
 def addRec(bookId, wordId, lc='default', lv=0):
     nextTS = m_utils.getNextTS(lc, lv)
-    queryStr = '''
-            INSERT INTO {}
+    queryStr = f'''
+            INSERT INTO {TABLE_REC}
                 (book_id, word_id, lc, lv, next_ts)
             VALUES
                 (?,?,?,?,?)
-    '''.format(TABLE_REC)
+    '''
     CONN.execute(queryStr, (bookId, wordId, lc, lv, nextTS))
     CONN.commit()
     return
@@ -160,9 +157,9 @@ def getRecValid(bookIds, reqCnt, validTS, validLv=1):
     if validLv > 0:
         validLv = '> 0'
     else:
-        validLv = '= {}'.format(str(validLv))
+        validLv = f'= {str(validLv)}'
     for bookId in bookIds:
-        bookFilter.append('book_id = "{}"'.format(bookId))
+        bookFilter.append(f'book_id = "{bookId}"')
     recValid = CONN.execute(
         queryStr.format(TABLE_REC, ' OR '.join(bookFilter), validTS, validLv))
     return recValid.fetchall()[:reqCnt]

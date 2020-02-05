@@ -5,6 +5,12 @@ def getUID(typePrefix=''):
     return typePrefix + str(uuid.uuid4())
 
 
+def getCurTS():
+    d = datetime.datetime.now()
+    epoch = datetime.datetime(1970, 1, 1)
+    return round((d - epoch).total_seconds())
+
+
 def getUTCTS():
     d = datetime.datetime.utcnow()
     epoch = datetime.datetime(1970, 1, 1)
@@ -22,5 +28,10 @@ def b64DecodeStr(strEncode):
     return strDecode.decode('utf-8')
 
 
-def getNextTS(level=0):
+def logging(logType, msg):
+    logbg = {'err': '[\33[31mERR\33[0m]'}
+    print(f'{logbg[logType]} {msg}')
+
+
+def getNextTS(lcId, level=0):
     return getUTCTS() + 86400
