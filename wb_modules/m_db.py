@@ -5,23 +5,23 @@ from . import m_utils, m_profile
 DB_NAME = 'data.db'
 TABLE_REC = 'card_records'
 TABLE_REC_OBJ = {
-    'bookId': {
+    'book_id': {
         'db_type': 'TEXT',
         'field_unique': False
     },
-    'wordId': {
+    'word_id': {
         'db_type': 'INTEGER',
         'field_unique': False
     },
-    'lcId': {
+    'lc': {
         'db_type': 'INTEGER',
         'field_unique': False
     },
-    'level': {
+    'lv': {
         'db_type': 'INTEGER',
         'field_unique': False
     },
-    'nextTS': {
+    'next_ts': {
         'db_type': 'INTEGER',
         'field_unique': False
     }
@@ -65,7 +65,8 @@ def tableCheck(tableName, fields, create=True, colNameB64E=True):
 
 
 def recTableCheck():
-    tableCheck('card_records', TABLE_REC_OBJ, True, False)
+    tableCheck(TABLE_REC, TABLE_REC_OBJ, True, False)
+    return
 
 
 def addBook(bookId):
@@ -77,6 +78,7 @@ def addBook(bookId):
         'field_render_tag': 'text'
     }
     tableCheck(bookId, fields)
+    return
 
 
 def addWord(bookId, wordId, wordObj, colNameB64E=True):
@@ -85,19 +87,23 @@ def addWord(bookId, wordId, wordObj, colNameB64E=True):
     for col in wordObj.keys():
         if colNameB64E:
             cols.append('"{}"'.format(m_utils.b64EncodeStr(col)))
-        values.append('"{}"'.format(wordObj[col]))
+        values.append(str(wordObj[col]))
+    valueReplace = []
+    for i in range(len(values)):
+        valueReplace.append('?')
     queryStr = '''
-            INSERT INTO "{}" ({})
+            INSERT INTO "{}"
+                ({})
             VALUES
                 ({})
-    '''.format(bookId, ','.join(cols), ','.join(values))
+    '''.format(bookId, ','.join(cols), ','.join(valueReplace))
     cur = CONN.cursor()
-    print(queryStr)
-    cur.execute(queryStr)
-    CONN.commit()
-    wordId = cur.lastrowid
-    # addRec(bookId, wordId)
-    return wordId
+    try:
+        cur.execute(queryStr, tuple(values))
+        CONN.commit()
+        addRec(bookId, wordId)
+    finally:
+        return wordId
 
 
 def getWord(bookId, wordId=None, colNameB64E=True):
@@ -117,3 +123,16 @@ def getWord(bookId, wordId=None, colNameB64E=True):
     for row in rows:
         data.append(list(row))
     return data
+
+
+def addRec(bookId, wordId, lc='default', lv=0):
+    nextTS = m_utils.getNextTS(lc, lv)
+    queryStr = '''
+            INSERT INTO {}
+                (book_id, word_id, lc, lv, next_ts)
+            VALUES
+                (?,?,?,?,?)
+    '''.format(TABLE_REC)
+    CONN.execute(queryStr, (bookId, wordId, lc, lv, nextTS))
+    CONN.commit()
+    return
