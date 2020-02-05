@@ -94,9 +94,10 @@ def addWord():
                               mimetype='application/json')
 
 
-@app.route('/api/rec', methods=['GET'])
+@app.route('/api/recValid', methods=['GET'])
 def getRec():
     req = m_utils.request(request)
+    data = {'err': False}
     status = 200
     try:
         recs = m_db.getRecValid(
@@ -109,16 +110,23 @@ def getRec():
                       paramType=int),
             req.param('lv', optional=True, default=1, paramType=int),
         )
-        words = []
-        for rec in recs:
-            word = {}
+        print(recs)
+        wordRecs = []
+        for rec in recs['data']:
+            wordRec = {'word': {'fields': {}}}
+            wordRec['rec_id'] = rec[recs['colIndex'].index('rec_id')]
+            wordRec['lc'] = rec[recs['colIndex'].index('lc')]
+            wordRec['lv'] = rec[recs['colIndex'].index('lv')]
+            wordRec['next_ts'] = rec[recs['colIndex'].index('next_ts')]
+            wordRec['word']['book_id'] = rec[recs['colIndex'].index('book_id')]
+            wordRec['word']['word_id'] = rec[recs['colIndex'].index('word_id')]
             wordInfo = m_db.getWord(rec[1], rec[2])
             for i in range(len(wordInfo[0])):
-                word[wordInfo[0][i]] = wordInfo[1][i]
-            words.append(word)
-        data = words
+                wordRec['word']['fields'][wordInfo[0][i]] = wordInfo[1][i]
+            wordRecs.append(wordRec)
+        data['data'] = wordRecs
     except:
-        data = {}
+        data['err'] = True
         status = 400
     return app.response_class(status=status,
                               response=json.dumps(data).encode('utf-8'),
