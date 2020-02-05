@@ -136,3 +136,33 @@ def addRec(bookId, wordId, lc='default', lv=0):
     CONN.execute(queryStr, (bookId, wordId, lc, lv, nextTS))
     CONN.commit()
     return
+
+
+def getRec(bookId, wordId):
+    return
+
+
+def getRecValid(bookIds, reqCnt, validTS, validLv=1):
+    queryStr = '''
+            SELECT rec_id, book_id, word_id, lv, next_ts FROM (
+                SELECT rank()
+                OVER(PARTITION BY book_id, word_id ORDER BY next_ts DESC) AS rk, rowid AS "rec_id", *
+                FROM "{}"
+            ) 
+            WHERE
+                    (rk = 1)
+                AND ({})
+                AND (next_ts < {})
+                AND (lv {})
+            ORDER BY next_ts DESC 
+    '''
+    bookFilter = []
+    if validLv > 0:
+        validLv = '> 0'
+    else:
+        validLv = '= {}'.format(str(validLv))
+    for bookId in bookIds:
+        bookFilter.append('book_id = "{}"'.format(bookId))
+    recValid = CONN.execute(
+        queryStr.format(TABLE_REC, ' OR '.join(bookFilter), validTS, validLv))
+    return recValid.fetchall()[:reqCnt]
