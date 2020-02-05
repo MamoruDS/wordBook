@@ -1,6 +1,55 @@
 import uuid, datetime, base64
 
 
+class ReqKeyUndefined(Exception):
+    pass
+
+
+class ReqKeyValueError(Exception):
+    pass
+
+
+class request:
+    def __init__(self, flask_request):
+        self.req = flask_request
+
+    def param(self, key, Optional=True, default=None, paramType=str):
+        val = self.req.args.get(key)
+        if (not Optional) and (val is None):
+            raise ReqKeyUndefined()
+        elif (val is None):
+            val = default
+        try:
+            val = paramType(val)
+        except (ValueError):
+            raise ReqKeyValueError()
+        return val
+
+    def data(self, key, Optional=True, default=None, paramType=str):
+        try:
+            val = self.req.get_json()[key]
+        except (KeyError, TypeError):
+            if Optional:
+                val = default
+            else:
+                raise ReqKeyUndefined()
+
+        try:
+            print(paramType(val))
+            if type(paramType(val)) is bool:
+                if val in [1, '1', 'true', 'True', True]:
+                    val = True
+                elif val in [0, '0', 'false', 'False', False]:
+                    val = False
+                else:
+                    raise ReqKeyValueError()
+            else:
+                val = paramType(val)
+        except (ValueError):
+            raise ReqKeyValueError()
+        return val
+
+
 def getUID(typePrefix=''):
     return typePrefix + str(uuid.uuid4())
 
