@@ -1,13 +1,45 @@
-let temp_card_render = undefined
+let temp_render = undefined
 
 const cardCtl = {}
 
-cardCtl._cardpack = {}
+cardCtl._renders = {}
+
+cardCtl._bookshelf = {}
 
 cardCtl._withdrawEnabled = false
 
 // cardCtl.setBtnView = (discardBtn = false, archiveBtn = false) => {
 // }
+
+cardCtl.getBookInfo = async (bookId, cached = true) => {
+    if (cardCtl._bookshelf[bookId] && cached) {
+        return cardCtl._bookshelf[bookId]
+    }
+    let reqOpt = pageUtils.getDefaultReqOptions()
+    reqOpt['url'] = '/api/book'
+    reqOpt['params']['book_id'] = bookId
+    const res = await pageUtils.req(reqOpt)
+    const bookInfo = res['data']['data'][0]
+    cardCtl._bookshelf[bookId] = bookInfo
+    return bookInfo
+}
+
+
+cardCtl.getRenderInfo = async (bookId, wordInfo) => {
+    let bookInfo = await cardCtl.getBookInfo(bookId)
+    let render = bookInfo['word_render']
+    let alias = render['alias']
+    let renderData = {}
+    for (let field of alias) {
+        renderData[field['renderField']]
+            = wordInfo[field['wordField']]
+    }
+    return {
+        render: render['render'],
+        renderStyle: render['render_style'],
+        renderData: renderData
+    }
+}
 
 cardCtl.updateDiscardPosCSS = (fixedHeight = 90) => {
     let wh = window.innerHeight
@@ -20,6 +52,21 @@ cardCtl.updateDiscardPosCSS = (fixedHeight = 90) => {
     }
     cssText = `.card_discard { top: ${wh - fixedHeight}px !important; }`
     style.innerHTML = cssText
+}
+
+cardCtl.toggleCardView = (enableCardView = true) => {
+    let views = {
+        cardView: document.getElementById('card_desk'),
+        cardBtnView: document.getElementById('card_ctl_btn_ctr'),
+        cardViewBG: document.getElementById('card_bg')
+    }
+    for (let view of Object.keys(views)) {
+        if (enableCardView) {
+            views[view].classList.remove('pasDisplay')
+        } else {
+            views[view].classList.add('pasDisplay')
+        }
+    }
 }
 
 cardCtl._cardScroll = (step = 0) => {
@@ -73,28 +120,23 @@ cardCtl.getWordRender = async wordRenderName => {
     return test_nisev.getWordRender[wordRenderName]
 }
 
-cardCtl._getCardRenderRemote = rName => {
-    // if (cardCtl._cardpack[rName]) return
+cardCtl._getRenderRemote = renderName => {
     return new Promise((resolve, reject) => {
         let script = document.createElement('script')
-        script.src = `${test_nisev.requestUrl}/static/custom/${rName}.js`
+        script.src = `${test_nisev.requestUrl}/static/custom/${renderName}.js`
         document.head.appendChild(script)
         script.onload = () => resolve()
         script.onerror = e => reject(e)
     })
 }
 
-cardCtl.getCardRender = async rName => {
-    if (!cardCtl._cardpack[rName]) {
-        await cardCtl._getCardRenderRemote(rName)
-        cardCtl._cardpack[rName] = {}
-        cardCtl._cardpack[rName]['html'] = {
-            front_html: temp_card_render['card_front_html'],
-            back_html: temp_card_render['card_back_html'],
-        }
-        cardCtl._cardpack[rName]['css'] = temp_card_render['card_css']
+cardCtl.getRender = async renderName => {
+    if (!cardCtl._renders[renderName]) {
+        await cardCtl._getRenderRemote(renderName)
+        cardCtl._renders[renderName] = {}
+        cardCtl._renders[renderName] = temp_render
     }
-    return cardCtl._cardpack[rName]
+    return cardCtl._renders[renderName]
 }
 
 cardCtl.updateCardView = (enableCardView = true) => {
@@ -113,57 +155,21 @@ cardCtl.updateCardView = (enableCardView = true) => {
 }
 
 cardCtl.createCardCtrNode = async (
-    rid, bid, wid, wlv, wordRender, wordFields,
+    recId, bookId, wordId, lc, lv, wordInfo,
     customStyle = {
         cardFace: 'card_face_default'
-    },
+    }
 ) => {
-    let cardCtr = document.createElement('div')
-    cardCtr.classList.add('card')
-    cardCtr.setAttribute('wi_rid', rid)
-    cardCtr.setAttribute('wi_bid', bid)
-    cardCtr.setAttribute('wi_wid', wid)
-    cardCtr.setAttribute('wi_wlv', wlv)
-    let render = await cardCtl.getWordRender(wordRender)
-    let card = {
-        name: render.cardName,
-        html: {
-            card_front: undefined,
-            card_back: undefined,
-        },
-        css: undefined,
-        // TODO: append randomSeed to style node id
-        styleNodeId: `${render.cardName}`,
-    }
-    let cardInfo = await cardCtl.getCardRender(card.name)
-    card.html.card_front = cardInfo['html']['front_html']
-    card.html.card_back = cardInfo['html']['back_html']
-    card.css = cardInfo['css']
-    for (let face of Object.keys(card.html)) {
-        let cardFace = document.createElement('div')
-        cardFace.classList.add('card_face')
-        cardFace.classList.add(customStyle.cardFace)
-        cardFace.classList.add(face)
-        let contentCtr = document.createElement('div')
-        contentCtr.classList.add('card_content_ctr')
-        contentCtr.innerHTML = card.html[face]
-        for (let field of render.alias) {
-            try {
-                let nf = contentCtr.querySelector(`[data=${field.cf}]`)
-                nf.innerHTML = wordFields[field.wf]
-            } catch (e) { }
-        }
-        cardFace.appendChild(contentCtr)
-        cardCtr.appendChild(cardFace)
-    }
-    if (!document.getElementById(card.styleNodeId)) {
-        let cardStyle = document.createElement('style')
-        cardStyle.type = 'text/css'
-        cardStyle.id = card.styleNodeId
-        cardStyle.appendChild(document.createTextNode(card.css))
-        document.body.appendChild(cardStyle)
-    }
-    return cardCtr
+    let renderInfo = await cardCtl.getRenderInfo(bookId, wordInfo)
+    let render = await cardCtl.getRender(renderInfo.render)
+    let card = render.getCard(renderInfo.renderData,
+        renderInfo.renderStyle, customStyle.cardFace)
+    card.setAttribute('wi_rid', recId)
+    card.setAttribute('wi_bid', bookId)
+    card.setAttribute('wi_wid', wordId)
+    card.setAttribute('wi_wlc', lc)
+    card.setAttribute('wi_wlv', lv)
+    return card
 }
 
 cardCtl.removeCard = async (cardEle) => {
@@ -216,39 +222,39 @@ cardCtl.updateDesk = async (action) => {
     }
 }
 
-class cardListNew {
+class cardList {
     constructor(bids) {
         this.wordList = test_nisev.wordList
         this.bookList = test_nisev.bookList
     }
 
     async putTopCard() {
-        let word = this.wordList.shift()
-        if (word) {
+        let rec = this.wordList.shift()
+        if (rec) {
             let card = await cardCtl.createCardCtrNode(
-                word['recId'], word['bookId'], word['wordId'],
-                word['level'], word['wordRender'], word['fields']
+                rec['rec_id'], rec['word']['book_id'], rec['word']['word_id'],
+                rec['lc'], rec['lv'], rec['word']['fields']
             )
             return card
         }
     }
 
-    async getLeftWords() {
-        let reqObj = pageUtils.getDefaultReqOptions()
-        reqObj.url = '/api/words/leftwords'
-        reqObj.params = {
-            bids: JSON.stringify(this.bookList),
-            c: 5,
-            b64d: true
+    async getLeftRecs() {
+        let reqOpt = pageUtils.getDefaultReqOptions()
+        reqOpt.url = '/api/recordValid'
+        reqOpt.params = {
+            book_ids: JSON.stringify(this.bookList),
+            cnt: 5,
+            lv: 0,
+            valid_ts: Math.floor(Date.now() / 1000) + 99999
         }
-        let res = await pageUtils.req(reqObj)
-        // return res
-        return res.data
+        let res = await pageUtils.req(reqOpt)
+        return res.data['data']
     }
 
     async updateWordList() {
         this.wordList = []
-        let fetchWords = await this.getLeftWords()
+        let fetchWords = await this.getLeftRecs()
         let cardPosList =
             ['card_discard', 'card_q0', 'card_q1', 'card_q2']
 
@@ -261,7 +267,7 @@ class cardListNew {
                 i_f++
                 continue
             }
-            let cardRidAttr = `[wi_rid="${fetchWords[i_f]['recId']}"]`
+            let cardRidAttr = `[wi_rid="${fetchWords[i_f]['rec_id']}"]`
             let deskCard = document.querySelector(`.${cardPos}${cardRidAttr}`)
 
             if (deskCard) {
@@ -288,4 +294,4 @@ class cardListNew {
     }
 }
 
-cardCtl.curCardList = new cardListNew()
+cardCtl.curCardList = new cardList()
