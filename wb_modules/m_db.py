@@ -24,6 +24,10 @@ TABLE_REC_OBJ = {
     'next_ts': {
         'db_type': 'INTEGER',
         'field_unique': False
+    },
+    'add_ts': {
+        'db_type': 'INTEGER',
+        'field_unique': False
     }
 }
 SQL_TYPE = set(['NULL', 'INTEGER', 'REAL', 'TEXT', 'BLOB'])
@@ -126,40 +130,58 @@ def addRec(bookId, wordId, lc='default', lv=0):
     nextTS = m_utils.getNextTS(lc, lv)
     queryStr = f'''
             INSERT INTO {TABLE_REC}
-                (book_id, word_id, lc, lv, next_ts)
+                (book_id, word_id, lc, lv, next_ts, add_ts)
             VALUES
-                (?,?,?,?,?)
+                (?,?,?,?,?,?)
     '''
-    CONN.execute(queryStr, (bookId, wordId, lc, lv, nextTS))
+    CONN.execute(queryStr, (bookId, wordId, lc, lv, nextTS, m_utils.getUTCTS()))
     CONN.commit()
     return
 
 
 def getRec(bookId, wordId):
-    return
+    colIndex = ['rec_id', 'lc', 'lv', 'next_ts', 'add_ts']
+    queryStr = f'''
+        SELECT rowid AS rec_id, lc, lv, next_ts, add_ts
+        FROM "card_records"
+        WHERE
+                "book_id"="{bookId}"
+            AND "word_id"="{wordId}"
+    '''
+    res = CONN.execute(queryStr)
+    return {
+        'data': res.fetchall(),
+        'colIndex': colIndex
+    }
 
 
 def getRecValid(bookIds, reqCnt, validTS, validLv=1):
-    queryStr = '''
-            SELECT rec_id, book_id, word_id, lv, next_ts FROM (
-                SELECT rank()
-                OVER(PARTITION BY book_id, word_id ORDER BY next_ts DESC) AS rk, rowid AS "rec_id", *
-                FROM "{}"
-            ) 
-            WHERE
-                    (rk = 1)
-                AND ({})
-                AND (next_ts < {})
-                AND (lv {})
-            ORDER BY next_ts DESC 
-    '''
+    colIndex = ['rec_id', 'book_id', 'word_id', 'lc', 'lv', 'next_ts']
     bookFilter = []
-    if validLv > 0:
+    if validLv == 1:
         validLv = '> 0'
+    elif validLv > 2:
+        validLv = '>= 0'
     else:
         validLv = f'= {str(validLv)}'
     for bookId in bookIds:
         bookFilter.append(f'book_id = "{bookId}"')
-    recValid = CONN.execute(
-        queryStr.format(TABLE_REC, ' OR '.join(bookFilter), validTS, validLv))
-    return recValid.fetchall()[:reqCnt]
+
+    queryStr = f'''
+            SELECT {', '.join(colIndex)} FROM (
+                SELECT rank()
+                OVER(PARTITION BY book_id, word_id ORDER BY next_ts DESC) AS rk, rowid AS "rec_id", *
+                FROM "{TABLE_REC}"
+            ) 
+            WHERE
+                    (rk = 1)
+                AND ({' OR '.join(bookFilter)})
+                AND (next_ts < {validTS})
+                AND (lv {validLv})
+            ORDER BY next_ts DESC 
+    '''
+    recValid = CONN.execute(queryStr)
+    return {
+        'data': recValid.fetchall()[:reqCnt],
+        'colIndex': colIndex
+    }
