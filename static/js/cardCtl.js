@@ -39,19 +39,58 @@ cardCtl._desk = undefined
 
 cardCtl._btnCtr = undefined
 
+cardCtl._touchmove = {
+    moving: false,
+    start: undefined, // [pageX, pageY]
+    end: undefined // [pageX, pageY]
+}
+
 cardCtl.init = () => {
     cardCtl._desk = document.getElementById('card_desk')
     cardCtl._btnCtr = document.getElementById('card_ctl_btn_ctr')
     cardCtl.btnCtrInit()
     document.addEventListener(
-        {
-
+        'touchstart', e => {
+            const touches = e.touches
+            if (e.target.id == 'card_ctl_btn_ctr' ||
+                e.target.id == 'card_desk' ||
+                e.target.classList.contains('card_ctl_btn')
+            )
+                cardCtl._touchmove.start = [touches[0].pageX, touches[0].pageY]
+        }
+    )
+    document.addEventListener(
+        'touchend', e => {
+            const btnCtr = cardCtl._btnCtr
+            if (cardCtl._touchmove.end) {
+                const dx = cardCtl._touchmove.start[0] - cardCtl._touchmove.end[0]
+                const dy = cardCtl._touchmove.start[1] - cardCtl._touchmove.end[1]
+                console.log(`dx:${dx} ;dy:${dy}`)
+                if (
+                    // dy <= -70 && Math.abs(dx) <= 40 // down
+                    dx <= -100 && Math.abs(dy) <= 40 // right
+                ) {
+                    btnCtr.classList.add('hide')
+                } else if (
+                    // dy >= 70 && Math.abs(dx) <= 40 // up
+                    dx >= 100 && Math.abs(dy) <= 40 // left
+                ) {
+                    btnCtr.classList.remove('hide')
+                }
+            }
+            cardCtl._touchmove.end = undefined
+        }
+    )
+    document.addEventListener(
+        'touchmove', e => {
+            const touches = e.touches
+            cardCtl._touchmove.end = [touches[0].pageX, touches[0].pageY]
         }
     )
     document.addEventListener(
         'click',
         e => {
-            if (e.target.classList.contains('card')) {
+            if (e.target.classList.contains('card_q0')) {
                 const topCard = e.target
                 if (topCard.classList.contains('card_flip')) {
                     topCard.classList.remove('card_flip')
@@ -223,7 +262,7 @@ cardCtl.btnGrpUpdate = () => {
     cardCtl.btnUpdate('card_ctl_btn_withdraw', !cardCtl._status.hasDiscard)
     if (cardCtl._status.curCard) {
         cardCtl.btnUpdate('card_ctl_btn_flip', false)
-        cardCtl.btnUpdate('card_ctl_btn_tags', false)
+        cardCtl.btnUpdate('card_ctl_btn_tags', true)
         cardCtl.btnUpdate('card_ctl_btn_tr0', false)
         cardCtl.btnUpdate('card_ctl_btn_tr1', false)
         cardCtl.btnUpdate('card_ctl_btn_tr2', false)
