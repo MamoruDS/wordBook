@@ -1,4 +1,4 @@
-import uuid, datetime, base64, json
+import uuid, datetime, base64, json, math
 
 
 class ReqTokenUndefined(Exception):
@@ -93,5 +93,65 @@ def logging(logType, msg):
     print(f'{logbg[logType]} {msg}')
 
 
-def getNextTS(lcId, level=0):
-    return getUTCTS() + 86400
+def getNextTS(lc, level, testRes=0):
+    mem = 0.5
+    dt = 0
+
+    if testRes == 0:
+        level = 1
+
+    if lc == 'default' and level != 0:
+        lv = levelMap(level)
+        dt = (mem**-1)**(lv**-1)
+        dt = math.floor(dt)
+    return getUTCTS() + (dt * 60)
+
+
+def levelMap(level):
+    power = 1
+    return (0.4054 * (level**-power)) + 0.0248
+
+def getForgetTimePoint(level):
+    mem = 0.5 # 0.5M
+    lv = levelMap(level)
+    return math.floor((mem**-1)**(lv**-1))
+
+def getLearnProgress(lc, tr, history=[]):
+    progress = {}
+    # if lc == 'default':
+    #     if (len(history) is 0) or (history[0][2] is 0):
+    #         if (tr is 0) or (tr is 1):
+    #             lv = 1
+    #         elif tr is 2:
+    #             lv = 4
+    #         elif tr is 3:
+    #             lv = 7
+    #     elif history[0][2] is 1:
+    #         if (tr is 0):
+    #             lv = 
+    # ts = getForgetTimePoint(lv)
+    if tr is not -1:
+        if len(history) is 0:
+            lv = 0
+        else:
+            lv = history[0][2]
+        if tr is 0:
+            lv = 1
+        elif tr is 1:
+            lv = lv - 1
+            if lv < 1:
+                lv = 1
+        elif tr is 2:
+            lv = lv + 1
+        elif tr is 3:
+            lv = lv + 3
+        ts = getForgetTimePoint(lv)
+        progress['nextLv'] = lv
+        progress['nextTS'] = getUTCTS() + (ts * 60)
+        progress['dt'] = ts
+    else:
+        lv = -1
+        progress['nextLv'] = lv
+        progress['nextTS'] = getUTCTS()
+        progress['dt'] = 0
+    return progress
