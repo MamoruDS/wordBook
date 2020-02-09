@@ -104,7 +104,7 @@ def addWord(bookId, wordId, wordObj, colNameB64E=True):
     try:
         cur.execute(queryStr, tuple(values))
         CONN.commit()
-        addRec(bookId, wordId)
+        addRec(bookId, wordId, 'default', 0, m_utils.getUTCTS())
     finally:
         return wordId
 
@@ -126,15 +126,15 @@ def getWord(bookId, wordId=None, colNameB64E=True):
     return data
 
 
-def addRec(bookId, wordId, lc='default', lv=0):
-    nextTS = m_utils.getNextTS(lc, lv)
+def addRec(bookId, wordId, lc, lv, nextTS):
     queryStr = f'''
             INSERT INTO {TABLE_REC}
                 (book_id, word_id, lc, lv, next_ts, add_ts)
             VALUES
                 (?,?,?,?,?,?)
     '''
-    CONN.execute(queryStr, (bookId, wordId, lc, lv, nextTS, m_utils.getUTCTS()))
+    CONN.execute(queryStr,
+                 (bookId, wordId, lc, lv, nextTS, m_utils.getUTCTS()))
     CONN.commit()
     return
 
@@ -147,12 +147,23 @@ def getRec(bookId, wordId):
         WHERE
                 "book_id"="{bookId}"
             AND "word_id"="{wordId}"
+        ORDER BY next_ts DESC
     '''
     res = CONN.execute(queryStr)
-    return {
-        'data': res.fetchall(),
-        'colIndex': colIndex
-    }
+    return {'data': res.fetchall(), 'colIndex': colIndex}
+
+
+def getRecHistory(bookId, wordId):
+    queryStr = f'''
+        SELECT rowid AS rec_id, lc, lv, next_ts, add_ts
+        FROM "card_records"
+        WHERE
+                "book_id"="{bookId}"
+            AND "word_id"="{wordId}"
+        ORDER BY next_ts DESC
+    '''
+    res = CONN.execute(queryStr)
+    return res.fetchall()
 
 
 def getRecValid(bookIds, reqCnt, validTS, validLv=1):
@@ -181,7 +192,4 @@ def getRecValid(bookIds, reqCnt, validTS, validLv=1):
             ORDER BY next_ts DESC 
     '''
     recValid = CONN.execute(queryStr)
-    return {
-        'data': recValid.fetchall()[:reqCnt],
-        'colIndex': colIndex
-    }
+    return {'data': recValid.fetchall()[:reqCnt], 'colIndex': colIndex}

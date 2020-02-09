@@ -16,6 +16,11 @@ def page_books():
     return app.send_static_file('pages/books.html')
 
 
+@app.route('/card')
+def page_card():
+    return app.send_static_file('pages/card.html')
+
+
 @app.route('/testpage')
 def page_test():
     return app.send_static_file('pages/test.html')
@@ -24,12 +29,13 @@ def page_test():
 @app.route('/api/book', methods=['GET'])
 def getBook():
     req = m_utils.request(request)
+    data = {'err': False}
     status = 200
     try:
-        data = m_profile.confGetBook(
-            req.param('book_id', optional=True, default=None, paramType=str))
+        data['data'] = m_profile.confGetBook(
+            req.param('book_id', optional=True, default=None, paramType=None))
     except:
-        data = {}
+        data = {'err': True}
         status = 400
     return app.response_class(status=status,
                               response=json.dumps(data),
@@ -39,20 +45,18 @@ def getBook():
 @app.route('/api/book', methods=['POST'])
 def addBook():
     req = m_utils.request(request)
+    data = {'err': False}
     status = 200
     try:
         bookId = m_profile.confAddBook(
             req.data('book_name', optional=False),
             req.data('book_fields', optional=False, paramType=dict),
             req.data('book_cover_url', optional=True, default='example.png'),
-            req.data('book_wordrender',
-                     optional=True,
-                     default='preset_card_01'),
-            req.data('book_web_render', optional=True, default='default'))
+            req.data('word_render', optional=False))
         m_db.addBook(bookId)
-        data = {'book_id': bookId}
+        data['data'] = {'book_id': bookId}
     except:
-        data = {}
+        data = {'err': True}
         status = 400
     return app.response_class(status=status,
                               response=json.dumps(data),
@@ -62,12 +66,13 @@ def addBook():
 @app.route('/api/word', methods=['GET'])
 def getWord():
     req = m_utils.request(request)
+    data = {'err': False}
     status = 200
     try:
-        data = m_db.getWord(req.param('book_id', optional=False),
-                            req.param('word_id', optional=True))
+        data['data'] = m_db.getWord(req.param('book_id', optional=False),
+                                    req.param('word_id', optional=True))
     except:
-        data = {}
+        data = {'err': True}
         status = 400
     return app.response_class(status=status,
                               response=json.dumps(data),
@@ -77,6 +82,7 @@ def getWord():
 @app.route('/api/word', methods=['POST'])
 def addWord():
     req = m_utils.request(request)
+    data = {'err': False}
     status = 200
     try:
         wordId = m_db.addWord(req.param('book_id', optional=False),
@@ -85,17 +91,63 @@ def addWord():
                                        optional=False,
                                        paramType=dict),
                               colNameB64E=True)
-        data = {'word_id', wordId}
+        data['data'] = {'word_id', wordId}
     except:
-        data = {}
+        data = {'err': True}
         status = 400
     return app.response_class(status=status,
                               response=json.dumps(data),
                               mimetype='application/json')
 
 
-@app.route('/api/recValid', methods=['GET'])
-def getRec():
+@app.route('/api/record', methods=['POST'])
+def addRec():
+    req = m_utils.request(request)
+    data = {'err': False}
+    status = 200
+    try:
+        recHistory = m_db.getRecHistory(req.param('book_id', optional=False),
+                                        req.param('word_id', optional=False))
+        progress = m_utils.getLearnProgress(
+            'default', req.data('tr', optional=False, paramType=int),
+            recHistory)
+        m_db.addRec(req.param('book_id', optional=False),
+                    req.param('word_id',
+                              optional=False), 'default', progress['nextLv'],
+                    (progress['dt'] * 60) + m_utils.getUTCTS())
+    except:
+        data['err'] = True
+        status = 400
+    return app.response_class(status=status,
+                              response=json.dumps(data).encode('utf-8'),
+                              mimetype='application/json')
+
+
+@app.route('/api/progress', methods=['GET'])
+def getProgress():
+    req = m_utils.request(request)
+    data = {'err': False}
+    status = 200
+    try:
+        recHistory = m_db.getRecHistory(req.param('book_id', optional=False),
+                                        req.param('word_id', optional=False))
+        lc = 'default'
+        data['data'] = {
+            'tr0': m_utils.getLearnProgress(lc, 0, recHistory),
+            'tr1': m_utils.getLearnProgress(lc, 1, recHistory),
+            'tr2': m_utils.getLearnProgress(lc, 2, recHistory),
+            'tr3': m_utils.getLearnProgress(lc, 3, recHistory)
+        }
+    except:
+        data['err'] = True
+        status = 400
+    return app.response_class(status=status,
+                              response=json.dumps(data).encode('utf-8'),
+                              mimetype='application/json')
+
+
+@app.route('/api/recordValid', methods=['GET'])
+def getRecValid():
     req = m_utils.request(request)
     data = {'err': False}
     status = 200
@@ -110,7 +162,6 @@ def getRec():
                       paramType=int),
             req.param('lv', optional=True, default=1, paramType=int),
         )
-        print(recs)
         wordRecs = []
         for rec in recs['data']:
             wordRec = {'word': {'fields': {}}}
