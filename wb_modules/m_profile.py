@@ -1,4 +1,4 @@
-import os, json
+import os, json, sys
 
 from . import m_utils
 
@@ -6,11 +6,15 @@ PROFILE_FILE = 'profile.json'
 
 
 def getConf():
-    if os.path.isfile(PROFILE_FILE):
+    conf = {'books': {}}
+    try:
         with open(PROFILE_FILE) as json_file:
             conf = json.load(json_file)
-    else:
-        conf = {'books': {}}
+    except FileNotFoundError:
+        pass
+    except json.decoder.JSONDecodeError:
+        m_utils.logging('err','conf file damaged')
+        sys.exit()
     return conf
 
 
@@ -39,16 +43,18 @@ def confGetBook(bookId=None):
 def confAddBook(book_name,
                 book_fields,
                 book_cover_url="cover.png",
-                book_wordrender="preset_card_01",
-                book_web_render="default"):
+                word_render = {
+                    'alias': [],
+                    'render': 'preset_render',
+                    'render_style': 'preset_card_01'
+                }):
     conf = getConf()
     bookId = m_utils.getUID('B-')
     conf['books'][bookId] = {
         'book_name': book_name,
         'book_fields': book_fields,
         'book_cover_url': book_cover_url,
-        'book_wordrender': book_wordrender,
-        'book_web_render': book_web_render
+        'word_render': word_render
     }
     setConf(conf)
     return bookId
